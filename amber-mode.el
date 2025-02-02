@@ -40,8 +40,13 @@
 (defun amber-re-word (inner)
   (concat "\\<" inner "\\>"))
 
+(defun amber-re-grab (inner)
+  (concat "\\(" inner "\\)"))
+
+(defconst amber-re-identifier "[[:word:]_][[:word:]_[:digit:]]*")
+
 (defun amber-re-definition (dtype)
-  (concat (amber-re-word dtype) "[[:space:]]+" "\\<\\(\\sw+\\) ?("))
+  (concat (amber-re-word dtype) "[[:space:]]+" (amber-re-grab amber-re-identifier)))
 
 (defun amber-re-variable (dtype)
   (concat (amber-re-word dtype) "[[:space:]]+" "\\<\\(\\sw+\\)[[:space:]]+ ?="))
