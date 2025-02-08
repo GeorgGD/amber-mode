@@ -33,15 +33,20 @@
 ;; TODO: Define mode keys for running amber code in a separate buffer
 ;; TODO: Turn amber-mode into a linter
 
-(defvar amber-mode-hook nil)
+(require 'syntax)
 
 (add-to-list 'auto-mode-alist '("\\.ab\\'" . amber-mode))
 
 (defun amber-re-word (inner)
   (concat "\\<" inner "\\>"))
 
+(defun amber-re-grab (inner)
+  (concat "\\(" inner "\\)"))
+
+(defconst amber-re-identifier "[[:word:]_][[:word:]_[:digit:]]*")
+
 (defun amber-re-definition (dtype)
-  (concat (amber-re-word dtype) "[[:space:]]+" "\\<\\(\\sw+\\) ?("))
+  (concat (amber-re-word dtype) "[[:space:]]+" (amber-re-grab amber-re-identifier)))
 
 (defun amber-re-variable (dtype)
   (concat (amber-re-word dtype) "[[:space:]]+" "\\<\\(\\sw+\\)[[:space:]]+ ?="))
@@ -78,7 +83,6 @@
             "Text" "Num" "Bool" "Null")
            symbol-end)
       . font-lock-type-face))
-
    ;; Definitions
    (mapcar (lambda (x)
              (list (amber-re-variable (car x))
@@ -107,8 +111,16 @@
   (* tab-width (min (car (syntax-ppss (line-beginning-position)))
                     (car (syntax-ppss (line-end-position))))))
 
+(defun amber-mode-syntax-table ()
+  "Syntax table for `amber-mode'."
+  (let ((table (make-syntax-table)))
+    (modify-syntax-entry ?\" "\\\"" table)
+    (modify-syntax-entry ?\\ "\\\\" table)
+    table))
+
 (define-derived-mode amber-mode prog-mode "Amber"
   "A major mode for the Amber programming language."
+  :syntax-table (amber-mode-syntax-table)
   (setq-local comment-start "// ")
   (setq-local comment-start-skip "//+ *")
   (setq-local comment-end "")
